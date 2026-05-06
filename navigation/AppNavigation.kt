@@ -1,0 +1,93 @@
+package com.example.shopping_site_andrio.navigation
+
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.shopping_site_andrio.ui.screen.cart.CartScreen
+import com.example.shopping_site_andrio.ui.screen.detail.ProductDetailScreen
+import com.example.shopping_site_andrio.ui.screen.home.HomeScreen
+import com.example.shopping_site_andrio.ui.screen.login.LoginScreen
+import com.example.shopping_site_andrio.ui.screen.order.OrderListScreen
+import com.example.shopping_site_andrio.ui.screen.profile.ProfileScreen
+
+@Composable
+fun AppNavigation(
+    navController: NavHostController,
+    isLoggedIn: Boolean,
+    startDestination: String,
+    modifier: Modifier = Modifier
+) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier
+    ) {
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(
+            route = Screen.Home.route,
+            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
+            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+        ) {
+            HomeScreen(
+                onProductClick = { productId ->
+                    navController.navigate(Screen.ProductDetail.createRoute(productId))
+                }
+            )
+        }
+        composable(
+            route = Screen.ProductDetail.route,
+            arguments = listOf(navArgument("id") { type = NavType.IntType }),
+            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
+            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getInt("id") ?: return@composable
+            ProductDetailScreen(
+                productId = productId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.Cart.route,
+            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
+            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+        ) {
+            CartScreen()
+        }
+        composable(
+            route = Screen.Profile.route,
+            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
+            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+        ) {
+            ProfileScreen(
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(
+            route = Screen.OrderList.route,
+            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
+            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+        ) {
+            OrderListScreen()
+        }
+    }
+}
