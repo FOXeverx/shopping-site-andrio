@@ -9,6 +9,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.shopping_site_andrio.data.config.AppConfig
 import com.example.shopping_site_andrio.data.model.ProductDto
 import java.text.NumberFormat
 import java.util.Locale
@@ -26,7 +27,7 @@ fun ProductCard(
     ) {
         Column {
             AsyncImage(
-                model = product.image_url ?: "https://via.placeholder.com/300",
+                model = AppConfig.resolveImageUrl(product.image_url) ?: "https://via.placeholder.com/300",
                 contentDescription = product.name,
                 modifier = Modifier
                     .fillMaxWidth()

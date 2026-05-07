@@ -5,6 +5,13 @@ import com.example.shopping_site_andrio.BuildConfig
 object AppConfig {
 
     const val BASE_URL: String = BuildConfig.BASE_URL
+    private val ORIGIN: String = BASE_URL.removeSuffix("api/")
+
+    fun resolveImageUrl(path: String?): String? {
+        if (path.isNullOrBlank()) return null
+        if (path.startsWith("http://") || path.startsWith("https://")) return path
+        return "${ORIGIN}${path.removePrefix("/")}"
+    }
 
     const val CONNECT_TIMEOUT_SEC: Long = 30L
     const val READ_TIMEOUT_SEC: Long = 30L

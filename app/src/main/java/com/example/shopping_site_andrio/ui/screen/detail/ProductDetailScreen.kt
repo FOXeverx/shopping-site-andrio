@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.example.shopping_site_andrio.data.config.AppConfig
 import com.example.shopping_site_andrio.data.model.CommentDto
 import com.example.shopping_site_andrio.data.model.RecommendItemDto
 import com.example.shopping_site_andrio.ui.component.ErrorView
@@ -77,7 +78,7 @@ fun ProductDetailScreen(
                 ) {
                     item {
                         AsyncImage(
-                            model = product.image_url ?: "https://via.placeholder.com/400",
+                            model = AppConfig.resolveImageUrl(product.image_url) ?: "https://via.placeholder.com/400",
                             contentDescription = product.name,
                             modifier = Modifier
                                 .fillMaxWidth()
