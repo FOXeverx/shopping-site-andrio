@@ -7,18 +7,19 @@ plugins {
 
 android {
     namespace = "com.example.shopping_site_andrio"
-    compileSdk = 35
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         applicationId = "com.example.shopping_site_andrio"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8000/api/\"")
+        buildConfigField("String", "BASE_URL", "\"http://8.138.29.9/api\"")
     }
 
     buildTypes {
