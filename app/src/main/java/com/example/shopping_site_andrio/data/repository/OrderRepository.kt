@@ -3,6 +3,7 @@ package com.example.shopping_site_andrio.data.repository
 import com.example.shopping_site_andrio.data.api.ApiResult
 import com.example.shopping_site_andrio.data.api.ApiService
 import com.example.shopping_site_andrio.data.api.safeApiCall
+import com.example.shopping_site_andrio.data.config.AppConfig
 import com.example.shopping_site_andrio.data.model.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -11,7 +12,7 @@ import javax.inject.Singleton
 class OrderRepository @Inject constructor(
     private val apiService: ApiService
 ) {
-    suspend fun getOrders(page: Int = 1, pageSize: Int = 20): ApiResult<List<OrderDto>> {
+    suspend fun getOrders(page: Int = 1, pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE): ApiResult<List<OrderDto>> {
         return safeApiCall { apiService.getOrders(page, pageSize) }
     }
 

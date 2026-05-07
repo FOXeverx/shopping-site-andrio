@@ -8,13 +8,14 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.shopping_site_andrio.data.config.AppConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "shopping_prefs")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = AppConfig.DATASTORE_NAME)
 
 @Singleton
 class TokenManager @Inject constructor(

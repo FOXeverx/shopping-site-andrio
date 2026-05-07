@@ -124,7 +124,7 @@ app/src/main/java/com/example/shopping_site_andrio/
 ## 构建与运行
 
 1. 用 Android Studio 打开项目
-2. 配置后端 API 地址（`app/build.gradle.kts` 中的 `BASE_URL`）
+2. 配置后端 API 地址（`app/src/main/java/.../data/config/AppConfig.kt` 中的 `BASE_URL`，实际值由 `app/build.gradle.kts` 的 `buildConfigField` 定义）
 3. 运行 `app` 模块
 
 ```bash

@@ -1,5 +1,6 @@
 package com.example.shopping_site_andrio.data.api
 
+import com.example.shopping_site_andrio.data.config.AppConfig
 import com.example.shopping_site_andrio.data.model.*
 import retrofit2.Response
 import retrofit2.http.*
@@ -52,7 +53,7 @@ interface ApiService {
     suspend fun getProductComments(
         @Path("id") productId: Int,
         @Query("page") page: Int = 1,
-        @Query("page_size") pageSize: Int = 20
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
     ): Response<ApiResponse<List<CommentDto>>>
 
     @POST("product/{id}/comments")
@@ -79,7 +80,7 @@ interface ApiService {
     @GET("order")
     suspend fun getOrders(
         @Query("page") page: Int = 1,
-        @Query("page_size") pageSize: Int = 20
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
     ): Response<ApiResponse<List<OrderDto>>>
 
     @GET("order/{id}")
@@ -97,18 +98,18 @@ interface ApiService {
     @GET("recommend/product/{id}")
     suspend fun getProductRecommendations(
         @Path("id") productId: Int,
-        @Query("limit") limit: Int = 5
+        @Query("limit") limit: Int = AppConfig.DEFAULT_RECOMMEND_LIMIT
     ): Response<ApiResponse<List<RecommendItemDto>>>
 
     @GET("recommend/bought-also/{id}")
     suspend fun getBoughtAlsoRecommendations(
         @Path("id") productId: Int,
-        @Query("limit") limit: Int = 5
+        @Query("limit") limit: Int = AppConfig.DEFAULT_RECOMMEND_LIMIT
     ): Response<ApiResponse<List<RecommendItemDto>>>
 
     @GET("recommend/user/me")
     suspend fun getUserRecommendations(
-        @Query("limit") limit: Int = 10
+        @Query("limit") limit: Int = AppConfig.DEFAULT_USER_RECOMMEND_LIMIT
     ): Response<ApiResponse<List<RecommendItemDto>>>
 
     @POST("browse")

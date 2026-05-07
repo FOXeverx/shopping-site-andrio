@@ -6,6 +6,7 @@ import androidx.paging.PagingData
 import com.example.shopping_site_andrio.data.api.ApiResult
 import com.example.shopping_site_andrio.data.api.ApiService
 import com.example.shopping_site_andrio.data.api.safeApiCall
+import com.example.shopping_site_andrio.data.config.AppConfig
 import com.example.shopping_site_andrio.data.model.ProductDto
 import com.example.shopping_site_andrio.data.paging.ProductPagingSource
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +26,7 @@ class ProductRepository @Inject constructor(
         order: String? = null
     ): Flow<PagingData<ProductDto>> {
         return Pager(
-            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+            config = PagingConfig(pageSize = AppConfig.DEFAULT_PAGE_SIZE, enablePlaceholders = false),
             pagingSourceFactory = {
                 ProductPagingSource(
                     apiService = apiService,

@@ -1,9 +1,9 @@
 package com.example.shopping_site_andrio.di
 
-import com.example.shopping_site_andrio.BuildConfig
 import com.example.shopping_site_andrio.data.api.ApiService
 import com.example.shopping_site_andrio.data.api.AuthInterceptor
 import com.example.shopping_site_andrio.data.api.LoggingInterceptor
+import com.example.shopping_site_andrio.data.config.AppConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,9 +26,9 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .addInterceptor(LoggingInterceptor())
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(AppConfig.CONNECT_TIMEOUT_SEC, TimeUnit.SECONDS)
+            .readTimeout(AppConfig.READ_TIMEOUT_SEC, TimeUnit.SECONDS)
+            .writeTimeout(AppConfig.WRITE_TIMEOUT_SEC, TimeUnit.SECONDS)
             .build()
     }
 
@@ -36,7 +36,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.BASE_URL)
+            .baseUrl(AppConfig.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
