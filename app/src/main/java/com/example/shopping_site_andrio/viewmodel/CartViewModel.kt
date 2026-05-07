@@ -97,6 +97,6 @@ class CartViewModel @Inject constructor(
     val totalPrice: Double
         get() {
             val items = _uiState.value.cartItems.data ?: return 0.0
-            return items.sumOf { (it.productPrice ?: 0.0) * it.quantity }
+            return items.sumOf { (it.product_price ?: 0.0) * it.quantity }
         }
 }

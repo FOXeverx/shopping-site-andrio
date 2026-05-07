@@ -46,7 +46,7 @@ fun ProfileScreen(
                 )
             }
             uiState.user.data != null -> {
-                val user = uiState.user.data
+                val user = uiState.user.data!!
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()

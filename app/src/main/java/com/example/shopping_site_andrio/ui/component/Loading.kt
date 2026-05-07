@@ -32,7 +32,7 @@ fun SkeletonLoading(modifier: Modifier = Modifier) {
     val brush = Brush.linearGradient(
         colors = shimmerColors,
         start = Offset.Zero,
-        end = Offset(x = translateAnim.value, y = translateAnim.value)
+        end = Offset(x = translateAnim, y = translateAnim)
     )
 
     LazyColumn(

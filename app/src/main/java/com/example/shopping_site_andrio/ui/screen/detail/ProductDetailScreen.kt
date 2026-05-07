@@ -67,7 +67,7 @@ fun ProductDetailScreen(
                 )
             }
             uiState.product.data != null -> {
-                val product = uiState.product.data
+                val product = uiState.product.data!!
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
