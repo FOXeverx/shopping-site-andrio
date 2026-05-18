@@ -10,8 +10,6 @@ import com.example.shopping_site_andrio.data.repository.OrderRepository
 import com.example.shopping_site_andrio.data.repository.ProductRepository
 import com.example.shopping_site_andrio.domain.model.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,21 +41,21 @@ class CartViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(cartItems = UiState.loading())
             when (val result = cartRepository.getCart()) {
                 is ApiResult.Success -> {
-                    val enrichedItems = result.data.map { item ->
-                        async {
-                            val productResult = productRepository.getProductDetail(item.product_id)
-                            if (productResult is ApiResult.Success) {
-                                val p = productResult.data
-                                item.copy(
-                                    product_name = p.name,
-                                    product_price = p.price,
-                                    image_url = p.image_url
-                                )
-                            } else {
-                                item
-                            }
+                    val rawItems = result.data
+                    val enrichedItems = ArrayList<CartItemDto>(rawItems.size)
+                    for (item in rawItems) {
+                        val productResult = productRepository.getProductDetail(item.product_id)
+                        if (productResult is ApiResult.Success) {
+                            val p = productResult.data
+                            enrichedItems.add(item.copy(
+                                product_name = p.name,
+                                product_price = p.price,
+                                image_url = p.image_url
+                            ))
+                        } else {
+                            enrichedItems.add(item)
                         }
-                    }.awaitAll()
+                    }
                     _uiState.value = _uiState.value.copy(cartItems = UiState.success(enrichedItems))
                 }
                 is ApiResult.Error -> {
