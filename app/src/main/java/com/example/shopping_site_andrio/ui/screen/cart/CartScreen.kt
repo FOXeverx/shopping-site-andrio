@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.shopping_site_andrio.data.model.CartItemDto
+import com.example.shopping_site_andrio.data.model.ProductDto
 import com.example.shopping_site_andrio.ui.component.EmptyState
 import com.example.shopping_site_andrio.ui.component.ErrorView
 import com.example.shopping_site_andrio.ui.component.formatPrice
@@ -71,6 +72,7 @@ fun CartScreen(
                         items(uiState.cartItems.data ?: emptyList()) { item ->
                             CartItemRow(
                                 item = item,
+                                product = uiState.products[item.product_id],
                                 onQuantityChange = { qty ->
                                     viewModel.updateQuantity(item.id, qty)
                                 },
@@ -142,6 +144,7 @@ fun CartScreen(
 @Composable
 fun CartItemRow(
     item: CartItemDto,
+    product: ProductDto? = null,
     onQuantityChange: (Int) -> Unit,
     onRemove: () -> Unit
 ) {
@@ -154,12 +157,12 @@ fun CartItemRow(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = item.product_name ?: "Product",
+                    text = product?.name ?: item.product_name ?: "Product",
                     style = MaterialTheme.typography.titleSmall
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = formatPrice(item.product_price ?: 0.0),
+                    text = formatPrice(product?.price ?: item.product_price ?: 0.0),
                     color = MaterialTheme.colorScheme.primary
                 )
             }

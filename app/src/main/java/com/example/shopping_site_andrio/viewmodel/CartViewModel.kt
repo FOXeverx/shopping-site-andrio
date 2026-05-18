@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.shopping_site_andrio.data.api.ApiResult
 import com.example.shopping_site_andrio.data.model.CartItemDto
 import com.example.shopping_site_andrio.data.model.OrderDto
+import com.example.shopping_site_andrio.data.model.ProductDto
 import com.example.shopping_site_andrio.data.repository.CartRepository
 import com.example.shopping_site_andrio.data.repository.OrderRepository
 import com.example.shopping_site_andrio.data.repository.ProductRepository
@@ -18,6 +19,7 @@ import javax.inject.Inject
 
 data class CartUiState(
     val cartItems: UiState<List<CartItemDto>> = UiState.loading(),
+    val products: Map<Int, ProductDto> = emptyMap(),
     val orderResult: UiState<OrderDto> = UiState(),
     val message: String? = null
 )
@@ -42,21 +44,17 @@ class CartViewModel @Inject constructor(
             when (val result = cartRepository.getCart()) {
                 is ApiResult.Success -> {
                     val rawItems = result.data
-                    val enrichedItems = ArrayList<CartItemDto>(rawItems.size)
+                    val newProducts = mutableMapOf<Int, ProductDto>()
                     for (item in rawItems) {
                         val productResult = productRepository.getProductDetail(item.product_id)
                         if (productResult is ApiResult.Success) {
-                            val p = productResult.data
-                            enrichedItems.add(item.copy(
-                                product_name = p.name,
-                                product_price = p.price,
-                                image_url = p.image_url
-                            ))
-                        } else {
-                            enrichedItems.add(item)
+                            newProducts[item.product_id] = productResult.data
                         }
                     }
-                    _uiState.value = _uiState.value.copy(cartItems = UiState.success(enrichedItems))
+                    _uiState.value = _uiState.value.copy(
+                        cartItems = UiState.success(rawItems),
+                        products = newProducts
+                    )
                 }
                 is ApiResult.Error -> {
                     _uiState.value = _uiState.value.copy(cartItems = UiState.error(result.message))
@@ -114,6 +112,7 @@ class CartViewModel @Inject constructor(
     val totalPrice: Double
         get() {
             val items = _uiState.value.cartItems.data ?: return 0.0
-            return items.sumOf { (it.product_price ?: 0.0) * it.quantity }
+            val products = _uiState.value.products
+            return items.sumOf { (products[it.product_id]?.price ?: 0.0) * it.quantity }
         }
 }
