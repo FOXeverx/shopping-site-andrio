@@ -2,11 +2,9 @@ package com.example.shopping_site_andrio.data.model
 
 data class CartItemDto(
     val id: Int,
-    val product_id: Int,
-    val product_name: String?,
-    val product_price: Double?,
-    val image_url: String?,
-    val quantity: Int
+    val product: ProductDto?,
+    val quantity: Int,
+    val subtotal: Double? = null
 )
 
 data class AddCartRequest(
