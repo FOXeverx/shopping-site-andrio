@@ -7,6 +7,7 @@ import com.example.shopping_site_andrio.data.model.CartItemDto
 import com.example.shopping_site_andrio.data.model.OrderDto
 import com.example.shopping_site_andrio.data.repository.CartRepository
 import com.example.shopping_site_andrio.data.repository.OrderRepository
+import com.example.shopping_site_andrio.data.repository.ProductRepository
 import com.example.shopping_site_andrio.domain.model.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +25,8 @@ data class CartUiState(
 @HiltViewModel
 class CartViewModel @Inject constructor(
     private val cartRepository: CartRepository,
-    private val orderRepository: OrderRepository
+    private val orderRepository: OrderRepository,
+    private val productRepository: ProductRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CartUiState())
@@ -39,7 +41,20 @@ class CartViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(cartItems = UiState.loading())
             when (val result = cartRepository.getCart()) {
                 is ApiResult.Success -> {
-                    _uiState.value = _uiState.value.copy(cartItems = UiState.success(result.data))
+                    val enrichedItems = result.data.map { item ->
+                        val productResult = productRepository.getProductDetail(item.product_id)
+                        if (productResult is ApiResult.Success) {
+                            val p = productResult.data
+                            item.copy(
+                                product_name = p.name,
+                                product_price = p.price,
+                                image_url = p.image_url
+                            )
+                        } else {
+                            item
+                        }
+                    }
+                    _uiState.value = _uiState.value.copy(cartItems = UiState.success(enrichedItems))
                 }
                 is ApiResult.Error -> {
                     _uiState.value = _uiState.value.copy(cartItems = UiState.error(result.message))
