@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.shopping_site_andrio.data.config.AppConfig
 import com.example.shopping_site_andrio.data.model.CartItemDto
+import com.example.shopping_site_andrio.domain.model.UiState
 import com.example.shopping_site_andrio.ui.component.EmptyState
 import com.example.shopping_site_andrio.ui.component.ErrorView
 import com.example.shopping_site_andrio.ui.component.formatPrice
@@ -31,6 +33,8 @@ fun CartScreen(
     var showOrderDialog by remember { mutableStateOf(false) }
     var address by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var orderSubmitting by remember { mutableStateOf(false) }
+    var deleteConfirmId by remember { mutableIntStateOf(-1) }
 
     LaunchedEffect(uiState.message) {
         uiState.message?.let {
@@ -39,10 +43,34 @@ fun CartScreen(
         }
     }
 
+    LaunchedEffect(uiState.orderResult.data) {
+        if (uiState.orderResult.data != null) {
+            orderSubmitting = false
+            showOrderDialog = false
+            snackbarHostState.showSnackbar("Order created successfully!")
+            viewModel.clearMessage()
+        }
+    }
+
+    LaunchedEffect(uiState.orderResult.error) {
+        if (uiState.orderResult.error != null) {
+            orderSubmitting = false
+            snackbarHostState.showSnackbar(uiState.orderResult.error ?: "Order failed")
+            viewModel.clearMessage()
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(title = { Text("Cart") })
+            TopAppBar(
+                title = { Text("Cart") },
+                actions = {
+                    IconButton(onClick = { viewModel.loadCart() }) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
+                    }
+                }
+            )
         }
     ) { padding ->
         when {
@@ -73,13 +101,13 @@ fun CartScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(uiState.cartItems.data ?: emptyList()) { item ->
+                        items(uiState.cartItems.data ?: emptyList(), key = { it.id }) { item ->
                             CartItemRow(
                                 item = item,
                                 onQuantityChange = { qty ->
                                     viewModel.updateQuantity(item.id, qty)
                                 },
-                                onRemove = { viewModel.removeItem(item.id) }
+                                onRemove = { deleteConfirmId = item.id }
                             )
                         }
                     }
@@ -106,9 +134,30 @@ fun CartScreen(
         }
     }
 
+    if (deleteConfirmId > 0) {
+        AlertDialog(
+            onDismissRequest = { deleteConfirmId = -1 },
+            title = { Text("Remove Item") },
+            text = { Text("Are you sure you want to remove this item?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.removeItem(deleteConfirmId)
+                    deleteConfirmId = -1
+                }) {
+                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteConfirmId = -1 }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     if (showOrderDialog) {
         AlertDialog(
-            onDismissRequest = { showOrderDialog = false },
+            onDismissRequest = { if (!orderSubmitting) showOrderDialog = false },
             title = { Text("Create Order") },
             text = {
                 Column {
@@ -128,15 +177,29 @@ fun CartScreen(
                 }
             },
             confirmButton = {
-                Button(onClick = {
-                    viewModel.createOrder(address, note)
-                    showOrderDialog = false
-                }) {
+                Button(
+                    onClick = {
+                        orderSubmitting = true
+                        viewModel.createOrder(address, note)
+                    },
+                    enabled = !orderSubmitting
+                ) {
+                    if (orderSubmitting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
                     Text("Confirm")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showOrderDialog = false }) {
+                TextButton(
+                    onClick = { showOrderDialog = false },
+                    enabled = !orderSubmitting
+                ) {
                     Text("Cancel")
                 }
             }

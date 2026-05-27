@@ -17,6 +17,7 @@ data class LoginUiState(
     val isLoggedIn: Boolean = false,
     val loginState: UiState<Boolean> = UiState(),
     val registerState: UiState<Boolean> = UiState(),
+    val validationErrorMessage: String? = null,
     val username: String = "",
     val password: String = "",
     val email: String = "",
@@ -61,16 +62,22 @@ class LoginViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             isRegistering = !_uiState.value.isRegistering,
             loginState = UiState(),
-            registerState = UiState()
+            registerState = UiState(),
+            validationErrorMessage = null
         )
     }
 
     fun login() {
         val state = _uiState.value
-        if (state.username.isBlank() || state.password.isBlank()) return
+        if (state.username.isBlank() || state.password.isBlank()) {
+            _uiState.value = _uiState.value.copy(
+                validationErrorMessage = "Please enter username and password"
+            )
+            return
+        }
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(loginState = UiState.loading())
+            _uiState.value = _uiState.value.copy(validationErrorMessage = null, loginState = UiState.loading())
             when (val result = authRepository.login(state.username, state.password)) {
                 is ApiResult.Success -> {
                     _uiState.value = _uiState.value.copy(
@@ -89,12 +96,29 @@ class LoginViewModel @Inject constructor(
 
     fun register() {
         val state = _uiState.value
-        if (state.username.isBlank() || state.email.isBlank() ||
-            state.password.isBlank() || state.confirmPassword.isBlank()
-        ) return
+        if (state.username.isBlank()) {
+            _uiState.value = _uiState.value.copy(validationErrorMessage = "Please enter a username")
+            return
+        }
+        if (state.email.isBlank()) {
+            _uiState.value = _uiState.value.copy(validationErrorMessage = "Please enter an email")
+            return
+        }
+        if (state.password.isBlank()) {
+            _uiState.value = _uiState.value.copy(validationErrorMessage = "Please enter a password")
+            return
+        }
+        if (state.confirmPassword.isBlank()) {
+            _uiState.value = _uiState.value.copy(validationErrorMessage = "Please confirm your password")
+            return
+        }
+        if (state.password != state.confirmPassword) {
+            _uiState.value = _uiState.value.copy(validationErrorMessage = "Passwords do not match")
+            return
+        }
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(registerState = UiState.loading())
+            _uiState.value = _uiState.value.copy(validationErrorMessage = null, registerState = UiState.loading())
             when (val result = authRepository.register(
                 state.username, state.email, state.password, state.confirmPassword
             )) {
@@ -106,6 +130,31 @@ class LoginViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun forgotPassword() {
+        val state = _uiState.value
+        if (state.username.isBlank()) {
+            _uiState.value = _uiState.value.copy(validationErrorMessage = "Please enter your username first")
+            return
+        }
+        viewModelScope.launch {
+            when (authRepository.forgotPassword(state.username)) {
+                is ApiResult.Success -> {
+                    _uiState.value = _uiState.value.copy(
+                        validationErrorMessage = null,
+                        registerState = UiState.error("Password reset email sent")
+                    )
+                }
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(validationErrorMessage = "Failed to send reset email")
+                }
+            }
+        }
+    }
+
+    fun clearValidationError() {
+        _uiState.value = _uiState.value.copy(validationErrorMessage = null)
     }
 
     fun logout() {

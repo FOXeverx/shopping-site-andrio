@@ -29,8 +29,10 @@ data class HomeUiState(
     val recommendations: List<RecommendItemDto> = emptyList(),
     val recommendationsLoading: Boolean = false,
     val addingToCartProductId: Int? = null,
-    val addToCartMessage: String? = null
+    val snackbarEvent: SnackbarEvent? = null
 )
+
+data class SnackbarEvent(val id: Long, val message: String)
 
 data class FilterParams(
     val search: String?,
@@ -54,6 +56,8 @@ class HomeViewModel @Inject constructor(
     private val _filterParams = MutableStateFlow(
         FilterParams(null, null, null, "created_at", "desc")
     )
+
+    private var snackbarCounter = 0L
 
     val productFlow: Flow<PagingData<ProductDto>> = _filterParams.flatMapLatest { params ->
         productRepository.getProducts(
@@ -113,25 +117,25 @@ class HomeViewModel @Inject constructor(
     fun addToCart(productId: Int) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(addingToCartProductId = productId)
+            val message: String
             when (val result = cartRepository.addToCart(productId, 1)) {
                 is ApiResult.Success -> {
-                    _uiState.value = _uiState.value.copy(
-                        addingToCartProductId = null,
-                        addToCartMessage = "Added to cart"
-                    )
+                    message = "Added to cart"
                 }
                 is ApiResult.Error -> {
-                    _uiState.value = _uiState.value.copy(
-                        addingToCartProductId = null,
-                        addToCartMessage = result.message
-                    )
+                    message = result.message
                 }
             }
+            snackbarCounter++
+            _uiState.value = _uiState.value.copy(
+                addingToCartProductId = null,
+                snackbarEvent = SnackbarEvent(snackbarCounter, message)
+            )
         }
     }
 
-    fun clearAddToCartMessage() {
-        _uiState.value = _uiState.value.copy(addToCartMessage = null)
+    fun clearSnackbarMessage() {
+        _uiState.value = _uiState.value.copy(snackbarEvent = null)
     }
 
     private fun loadRecommendations() {

@@ -40,7 +40,6 @@ class ProfileViewModel @Inject constructor(
 
     fun loadUser() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(user = UiState.loading())
             when (val result = authRepository.getCurrentUser()) {
                 is ApiResult.Success -> {
                     _uiState.value = _uiState.value.copy(

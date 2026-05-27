@@ -27,6 +27,7 @@ import com.example.shopping_site_andrio.ui.component.SkeletonLoading
 fun ProductDetailScreen(
     productId: Int,
     onBack: () -> Unit,
+    onProductClick: (Int) -> Unit,
     viewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -42,8 +43,8 @@ fun ProductDetailScreen(
         }
     }
 
-    LaunchedEffect(uiState.addToCartMessage) {
-        uiState.addToCartMessage?.let {
+    LaunchedEffect(uiState.snackbarMessage) {
+        uiState.snackbarMessage?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearMessage()
         }
@@ -167,6 +168,7 @@ fun ProductDetailScreen(
                         item {
                             RecommendationRow(
                                 items = uiState.relatedRecommendations,
+                                onItemClick = onProductClick,
                                 modifier = Modifier.height(100.dp)
                             )
                         }
@@ -182,6 +184,7 @@ fun ProductDetailScreen(
                         item {
                             RecommendationRow(
                                 items = uiState.boughtAlsoRecommendations,
+                                onItemClick = onProductClick,
                                 modifier = Modifier.height(100.dp)
                             )
                         }
@@ -195,7 +198,7 @@ fun ProductDetailScreen(
                         )
                     }
 
-                    if (uiState.commentsLoading) {
+                    if (uiState.commentsLoading && uiState.comments.isEmpty()) {
                         item {
                             CircularProgressIndicator(modifier = Modifier.padding(16.dp))
                         }
@@ -208,8 +211,26 @@ fun ProductDetailScreen(
                             )
                         }
                     } else {
-                        items(uiState.comments) { comment ->
+                        items(uiState.comments, key = { it.id }) { comment ->
                             CommentItem(comment = comment)
+                        }
+                        if (uiState.commentsHasMore || uiState.commentsLoading) {
+                            item {
+                                TextButton(
+                                    onClick = { viewModel.loadMoreComments() },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    enabled = !uiState.commentsLoading
+                                ) {
+                                    if (uiState.commentsLoading) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                    }
+                                    Text(if (uiState.commentsLoading) "Loading..." else "Load more comments")
+                                }
+                            }
                         }
                     }
 
@@ -247,14 +268,16 @@ fun ProductDetailScreen(
 @Composable
 fun RecommendationRow(
     items: List<RecommendItemDto>,
+    onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
     ) {
-        items(items) { item ->
+        items(items, key = { it.product_id }) { item ->
             ElevatedCard(
+                onClick = { onItemClick(item.product_id) },
                 modifier = Modifier.width(160.dp)
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {

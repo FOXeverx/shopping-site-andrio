@@ -3,6 +3,7 @@ package com.example.shopping_site_andrio.ui.screen.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shopping_site_andrio.data.api.ApiResult
+import com.example.shopping_site_andrio.data.config.AppConfig
 import com.example.shopping_site_andrio.data.model.*
 import com.example.shopping_site_andrio.data.repository.*
 import com.example.shopping_site_andrio.domain.model.UiState
@@ -19,13 +20,15 @@ data class DetailUiState(
     val product: UiState<ProductDto> = UiState.loading(),
     val comments: List<CommentDto> = emptyList(),
     val commentsLoading: Boolean = false,
+    val commentsPage: Int = 1,
+    val commentsHasMore: Boolean = true,
     val relatedRecommendations: List<RecommendItemDto> = emptyList(),
     val boughtAlsoRecommendations: List<RecommendItemDto> = emptyList(),
     val newCommentText: String = "",
     val addingComment: Boolean = false,
     val quantity: Int = 1,
     val addingToCart: Boolean = false,
-    val addToCartMessage: String? = null
+    val snackbarMessage: String? = null
 )
 
 @HiltViewModel
@@ -55,18 +58,28 @@ class DetailViewModel @Inject constructor(
                 }
             }
         }
-        loadComments(productId)
+        loadComments(productId, refresh = true)
         loadRecommendations(productId)
         startBrowsing(productId)
     }
 
-    private fun loadComments(productId: Int) {
+    private fun loadComments(productId: Int, refresh: Boolean = false) {
         viewModelScope.launch {
+            val page = if (refresh) 1 else _uiState.value.commentsPage + 1
             _uiState.value = _uiState.value.copy(commentsLoading = true)
-            when (val result = commentRepository.getComments(productId)) {
+            when (val result = commentRepository.getComments(productId, page = page)) {
                 is ApiResult.Success -> {
+                    val newComments = result.data
+                    val merged = if (refresh) {
+                        newComments
+                    } else {
+                        val existingIds = _uiState.value.comments.map { it.id }.toSet()
+                        _uiState.value.comments + newComments.filter { it.id !in existingIds }
+                    }
                     _uiState.value = _uiState.value.copy(
-                        comments = result.data,
+                        comments = merged,
+                        commentsPage = page,
+                        commentsHasMore = newComments.size >= AppConfig.DEFAULT_PAGE_SIZE,
                         commentsLoading = false
                     )
                 }
@@ -75,6 +88,13 @@ class DetailViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun loadMoreComments() {
+        val state = _uiState.value
+        if (state.commentsLoading || !state.commentsHasMore) return
+        val productId = state.product.data?.id ?: return
+        loadComments(productId)
     }
 
     private fun loadRecommendations(productId: Int) {
@@ -133,12 +153,12 @@ class DetailViewModel @Inject constructor(
                         newCommentText = "",
                         addingComment = false
                     )
-                    loadComments(productId)
+                    loadComments(productId, refresh = true)
                 }
                 is ApiResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         addingComment = false,
-                        addToCartMessage = result.message
+                        snackbarMessage = result.message
                     )
                 }
             }
@@ -158,13 +178,13 @@ class DetailViewModel @Inject constructor(
                 is ApiResult.Success -> {
                     _uiState.value = _uiState.value.copy(
                         addingToCart = false,
-                        addToCartMessage = "Added to cart"
+                        snackbarMessage = "Added to cart"
                     )
                 }
                 is ApiResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         addingToCart = false,
-                        addToCartMessage = result.message
+                        snackbarMessage = result.message
                     )
                 }
             }
@@ -172,6 +192,6 @@ class DetailViewModel @Inject constructor(
     }
 
     fun clearMessage() {
-        _uiState.value = _uiState.value.copy(addToCartMessage = null)
+        _uiState.value = _uiState.value.copy(snackbarMessage = null)
     }
 }

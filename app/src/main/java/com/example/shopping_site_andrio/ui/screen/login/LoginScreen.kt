@@ -3,6 +3,9 @@ package com.example.shopping_site_andrio.ui.screen.login
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -77,9 +80,23 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.height(32.dp))
 
+                uiState.validationErrorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
+                    )
+                }
+
                 OutlinedTextField(
                     value = uiState.username,
-                    onValueChange = viewModel::updateUsername,
+                    onValueChange = {
+                        viewModel.updateUsername(it)
+                        viewModel.clearValidationError()
+                    },
                     label = { Text("Username") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -90,7 +107,10 @@ fun LoginScreen(
                 if (uiState.isRegistering) {
                     OutlinedTextField(
                         value = uiState.email,
-                        onValueChange = viewModel::updateEmail,
+                        onValueChange = {
+                            viewModel.updateEmail(it)
+                            viewModel.clearValidationError()
+                        },
                         label = { Text("Email") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
@@ -104,13 +124,19 @@ fun LoginScreen(
 
                 OutlinedTextField(
                     value = uiState.password,
-                    onValueChange = viewModel::updatePassword,
+                    onValueChange = {
+                        viewModel.updatePassword(it)
+                        viewModel.clearValidationError()
+                    },
                     label = { Text("Password") },
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        TextButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Text(if (passwordVisible) "Hide" else "Show")
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                            )
                         }
                     },
                     keyboardOptions = KeyboardOptions(
@@ -131,13 +157,19 @@ fun LoginScreen(
                 if (uiState.isRegistering) {
                     OutlinedTextField(
                         value = uiState.confirmPassword,
-                        onValueChange = viewModel::updateConfirmPassword,
+                        onValueChange = {
+                            viewModel.updateConfirmPassword(it)
+                            viewModel.clearValidationError()
+                        },
                         label = { Text("Confirm Password") },
                         singleLine = true,
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
-                            TextButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                                Text(if (confirmPasswordVisible) "Hide" else "Show")
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(
+                                    imageVector = if (confirmPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                    contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                                )
                             }
                         },
                         keyboardOptions = KeyboardOptions(
@@ -173,6 +205,12 @@ fun LoginScreen(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                if (!uiState.isRegistering) {
+                    TextButton(onClick = { viewModel.forgotPassword() }) {
+                        Text("Forgot Password?")
+                    }
+                }
 
                 TextButton(onClick = { viewModel.toggleRegisterMode() }) {
                     Text(

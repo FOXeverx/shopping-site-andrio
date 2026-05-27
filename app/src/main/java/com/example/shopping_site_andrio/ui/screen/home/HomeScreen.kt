@@ -5,6 +5,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,10 +27,10 @@ fun HomeScreen(
     var searchActive by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(uiState.addToCartMessage) {
-        uiState.addToCartMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearAddToCartMessage()
+    LaunchedEffect(uiState.snackbarEvent?.id) {
+        uiState.snackbarEvent?.let {
+            snackbarHostState.showSnackbar(it.message)
+            viewModel.clearSnackbarMessage()
         }
     }
 
@@ -39,7 +41,12 @@ fun HomeScreen(
                 title = { Text("Shopping") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
-                )
+                ),
+                actions = {
+                    IconButton(onClick = { products.refresh() }) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
+                    }
+                }
             )
         }
     ) { padding ->
@@ -191,7 +198,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(products.itemCount) { index ->
+                        items(products.itemCount, key = { products[it]?.id ?: it }) { index ->
                             products[index]?.let { product ->
                                 ProductCard(
                                     product = product,

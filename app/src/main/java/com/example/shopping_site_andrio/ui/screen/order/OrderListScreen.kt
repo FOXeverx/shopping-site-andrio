@@ -3,6 +3,8 @@ package com.example.shopping_site_andrio.ui.screen.order
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,13 +20,21 @@ import com.example.shopping_site_andrio.ui.component.SkeletonLoading
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderListScreen(
+    onOrderClick: (Int) -> Unit,
     viewModel: OrderViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("My Orders") })
+            TopAppBar(
+                title = { Text("My Orders") },
+                actions = {
+                    IconButton(onClick = { viewModel.loadOrders() }) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
+                    }
+                }
+            )
         }
     ) { padding ->
         when {
@@ -52,8 +62,8 @@ fun OrderListScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.orders.data ?: emptyList()) { order ->
-                        OrderCard(order = order)
+                    items(uiState.orders.data ?: emptyList(), key = { it.id }) { order ->
+                        OrderCard(order = order, onClick = { onOrderClick(order.id) })
                     }
                 }
             }
@@ -62,8 +72,11 @@ fun OrderListScreen(
 }
 
 @Composable
-fun OrderCard(order: OrderDto) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+fun OrderCard(order: OrderDto, onClick: () -> Unit) {
+    ElevatedCard(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),

@@ -46,6 +46,16 @@ fun MainApp() {
 
     val startDestination = if (loginState.isLoggedIn) Screen.Home.route else Screen.Login.route
 
+    val wasLoggedIn = remember { mutableStateOf(loginState.isLoggedIn) }
+    LaunchedEffect(loginState.isLoggedIn) {
+        if (wasLoggedIn.value && !loginState.isLoggedIn) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+        wasLoggedIn.value = loginState.isLoggedIn
+    }
+
     val bottomNavRoutes = listOf(
         Screen.Home.route,
         Screen.Cart.route,

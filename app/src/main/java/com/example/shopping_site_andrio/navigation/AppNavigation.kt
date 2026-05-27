@@ -15,6 +15,7 @@ import com.example.shopping_site_andrio.ui.screen.cart.CartScreen
 import com.example.shopping_site_andrio.ui.screen.detail.ProductDetailScreen
 import com.example.shopping_site_andrio.ui.screen.home.HomeScreen
 import com.example.shopping_site_andrio.ui.screen.login.LoginScreen
+import com.example.shopping_site_andrio.ui.screen.order.OrderDetailScreen
 import com.example.shopping_site_andrio.ui.screen.order.OrderListScreen
 import com.example.shopping_site_andrio.ui.screen.profile.ProfileScreen
 
@@ -59,7 +60,10 @@ fun AppNavigation(
             val productId = backStackEntry.arguments?.getInt("id") ?: return@composable
             ProductDetailScreen(
                 productId = productId,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onProductClick = { id ->
+                    navController.navigate(Screen.ProductDetail.createRoute(id))
+                }
             )
         }
         composable(
@@ -87,7 +91,23 @@ fun AppNavigation(
             enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
             exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
         ) {
-            OrderListScreen()
+            OrderListScreen(
+                onOrderClick = { orderId ->
+                    navController.navigate(Screen.OrderDetail.createRoute(orderId))
+                }
+            )
+        }
+        composable(
+            route = Screen.OrderDetail.route,
+            arguments = listOf(navArgument("id") { type = NavType.IntType }),
+            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
+            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getInt("id") ?: return@composable
+            OrderDetailScreen(
+                orderId = orderId,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

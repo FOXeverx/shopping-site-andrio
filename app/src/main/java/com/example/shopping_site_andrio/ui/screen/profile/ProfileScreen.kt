@@ -2,6 +2,9 @@ package com.example.shopping_site_andrio.ui.screen.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -105,8 +108,11 @@ fun ProfileScreen(
                                 label = { Text("Old Password") },
                                 visualTransformation = if (oldPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 trailingIcon = {
-                                    TextButton(onClick = { oldPasswordVisible = !oldPasswordVisible }) {
-                                        Text(if (oldPasswordVisible) "Hide" else "Show")
+                                    IconButton(onClick = { oldPasswordVisible = !oldPasswordVisible }) {
+                                        Icon(
+                                            imageVector = if (oldPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                            contentDescription = if (oldPasswordVisible) "Hide password" else "Show password"
+                                        )
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -121,8 +127,11 @@ fun ProfileScreen(
                                 label = { Text("New Password") },
                                 visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 trailingIcon = {
-                                    TextButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
-                                        Text(if (newPasswordVisible) "Hide" else "Show")
+                                    IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
+                                        Icon(
+                                            imageVector = if (newPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                            contentDescription = if (newPasswordVisible) "Hide password" else "Show password"
+                                        )
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth(),

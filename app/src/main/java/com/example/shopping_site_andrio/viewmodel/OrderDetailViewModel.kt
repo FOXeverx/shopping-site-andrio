@@ -13,40 +13,27 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class OrderListUiState(
-    val orders: UiState<List<OrderDto>> = UiState.loading()
+data class OrderDetailUiState(
+    val order: UiState<OrderDto> = UiState.loading()
 )
 
 @HiltViewModel
-class OrderViewModel @Inject constructor(
+class OrderDetailViewModel @Inject constructor(
     private val orderRepository: OrderRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(OrderListUiState())
-    val uiState: StateFlow<OrderListUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(OrderDetailUiState())
+    val uiState: StateFlow<OrderDetailUiState> = _uiState.asStateFlow()
 
-    init {
-        loadOrders()
-    }
-
-    fun loadOrders() {
+    fun loadOrderDetail(orderId: Int) {
         viewModelScope.launch {
-            when (val result = orderRepository.getOrders()) {
+            when (val result = orderRepository.getOrderDetail(orderId)) {
                 is ApiResult.Success -> {
-                    _uiState.value = _uiState.value.copy(orders = UiState.success(result.data))
+                    _uiState.value = _uiState.value.copy(order = UiState.success(result.data))
                 }
                 is ApiResult.Error -> {
-                    _uiState.value = _uiState.value.copy(orders = UiState.error(result.message))
+                    _uiState.value = _uiState.value.copy(order = UiState.error(result.message))
                 }
-            }
-        }
-    }
-
-    fun confirmOrder(orderId: Int, token: String) {
-        viewModelScope.launch {
-            when (val result = orderRepository.confirmOrder(orderId, token)) {
-                is ApiResult.Success -> loadOrders()
-                is ApiResult.Error -> {}
             }
         }
     }
