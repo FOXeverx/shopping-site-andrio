@@ -2,6 +2,8 @@ package com.example.shopping_site_andrio.ui.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.shopping_site_andrio.data.api.ApiResult
 import com.example.shopping_site_andrio.data.model.ProductDto
 import com.example.shopping_site_andrio.data.model.RecommendItemDto
@@ -9,9 +11,11 @@ import com.example.shopping_site_andrio.data.repository.CartRepository
 import com.example.shopping_site_andrio.data.repository.ProductRepository
 import com.example.shopping_site_andrio.data.repository.RecommendRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,6 +32,15 @@ data class HomeUiState(
     val addToCartMessage: String? = null
 )
 
+data class FilterParams(
+    val search: String?,
+    val minPrice: Double?,
+    val maxPrice: Double?,
+    val sort: String,
+    val order: String
+)
+
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val productRepository: ProductRepository,
@@ -38,8 +51,33 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private val _filterParams = MutableStateFlow(
+        FilterParams(null, null, null, "created_at", "desc")
+    )
+
+    val productFlow: Flow<PagingData<ProductDto>> = _filterParams.flatMapLatest { params ->
+        productRepository.getProducts(
+            search = params.search,
+            minPrice = params.minPrice,
+            maxPrice = params.maxPrice,
+            sort = params.sort,
+            order = params.order
+        )
+    }.cachedIn(viewModelScope)
+
     init {
         loadRecommendations()
+    }
+
+    private fun applyFilters() {
+        val s = _uiState.value
+        _filterParams.value = FilterParams(
+            search = s.searchQuery.ifBlank { null },
+            minPrice = s.minPrice.toDoubleOrNull(),
+            maxPrice = s.maxPrice.toDoubleOrNull(),
+            sort = s.sort,
+            order = s.order
+        )
     }
 
     fun updateSearch(query: String) {
@@ -56,23 +94,21 @@ class HomeViewModel @Inject constructor(
 
     fun updateSort(sort: String) {
         _uiState.value = _uiState.value.copy(sort = sort)
+        applyFilters()
     }
 
     fun updateOrder(order: String) {
         _uiState.value = _uiState.value.copy(order = order)
+        applyFilters()
     }
 
     fun toggleFilters() {
         _uiState.value = _uiState.value.copy(showFilters = !_uiState.value.showFilters)
     }
 
-    fun getProductFlow() = productRepository.getProducts(
-        search = _uiState.value.searchQuery.ifBlank { null },
-        minPrice = _uiState.value.minPrice.toDoubleOrNull(),
-        maxPrice = _uiState.value.maxPrice.toDoubleOrNull(),
-        sort = _uiState.value.sort,
-        order = _uiState.value.order
-    )
+    fun applySearch() {
+        applyFilters()
+    }
 
     fun addToCart(productId: Int) {
         viewModelScope.launch {

@@ -21,7 +21,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val products = viewModel.getProductFlow().collectAsLazyPagingItems()
+    val products = viewModel.productFlow.collectAsLazyPagingItems()
     var searchActive by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -54,13 +54,13 @@ fun HomeScreen(
                 onQueryChange = viewModel::updateSearch,
                 onSearch = {
                     searchActive = false
-                    products.refresh()
+                    viewModel.applySearch()
                 },
                 active = searchActive,
                 onActiveChange = { active ->
                     searchActive = active
                     if (!active && uiState.searchQuery.isBlank()) {
-                        products.refresh()
+                        viewModel.applySearch()
                     }
                 },
                 leadingIcon = { },

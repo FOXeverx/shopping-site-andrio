@@ -36,7 +36,6 @@ class CartViewModel @Inject constructor(
 
     fun loadCart() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(cartItems = UiState.loading())
             when (val result = cartRepository.getCart()) {
                 is ApiResult.Success -> {
                     _uiState.value = _uiState.value.copy(cartItems = UiState.success(result.data))
