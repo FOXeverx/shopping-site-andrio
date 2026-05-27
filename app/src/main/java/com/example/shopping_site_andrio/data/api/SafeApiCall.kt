@@ -16,8 +16,9 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<ApiResponse<T>>): Ap
         val response = apiCall()
         if (response.isSuccessful) {
             val body = response.body()
-            if (body != null && body.success && body.data != null) {
-                ApiResult.Success(body.data)
+            if (body != null && body.success) {
+                @Suppress("UNCHECKED_CAST")
+                ApiResult.Success(body.data as T)
             } else {
                 ApiResult.Error(
                     code = body?.error?.code,
