@@ -23,8 +23,17 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val products = viewModel.getProductFlow().collectAsLazyPagingItems()
     var searchActive by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.addToCartMessage) {
+        uiState.addToCartMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearAddToCartMessage()
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Shopping") },
@@ -186,7 +195,9 @@ fun HomeScreen(
                             products[index]?.let { product ->
                                 ProductCard(
                                     product = product,
-                                    onClick = { onProductClick(product.id) }
+                                    onClick = { onProductClick(product.id) },
+                                    onAddToCart = { viewModel.addToCart(product.id) },
+                                    isAddingToCart = uiState.addingToCartProductId == product.id
                                 )
                             }
                         }

@@ -1,11 +1,12 @@
 package com.example.shopping_site_andrio.ui.component
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -18,6 +19,8 @@ import java.util.Locale
 fun ProductCard(
     product: ProductDto,
     onClick: () -> Unit,
+    onAddToCart: (() -> Unit)? = null,
+    isAddingToCart: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(
@@ -52,6 +55,28 @@ fun ProductCard(
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.error
                     )
+                } else if (onAddToCart != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    FilledTonalButton(
+                        onClick = onAddToCart,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isAddingToCart
+                    ) {
+                        if (isAddingToCart) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                Icons.Filled.ShoppingCart,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Add to Cart")
+                        }
+                    }
                 }
             }
         }

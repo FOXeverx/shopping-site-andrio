@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.shopping_site_andrio.data.api.ApiResult
 import com.example.shopping_site_andrio.data.model.ProductDto
 import com.example.shopping_site_andrio.data.model.RecommendItemDto
+import com.example.shopping_site_andrio.data.repository.CartRepository
 import com.example.shopping_site_andrio.data.repository.ProductRepository
 import com.example.shopping_site_andrio.data.repository.RecommendRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,13 +23,16 @@ data class HomeUiState(
     val order: String = "desc",
     val showFilters: Boolean = false,
     val recommendations: List<RecommendItemDto> = emptyList(),
-    val recommendationsLoading: Boolean = false
+    val recommendationsLoading: Boolean = false,
+    val addingToCartProductId: Int? = null,
+    val addToCartMessage: String? = null
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val productRepository: ProductRepository,
-    private val recommendRepository: RecommendRepository
+    private val recommendRepository: RecommendRepository,
+    private val cartRepository: CartRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -69,6 +73,30 @@ class HomeViewModel @Inject constructor(
         sort = _uiState.value.sort,
         order = _uiState.value.order
     )
+
+    fun addToCart(productId: Int) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(addingToCartProductId = productId)
+            when (val result = cartRepository.addToCart(productId, 1)) {
+                is ApiResult.Success -> {
+                    _uiState.value = _uiState.value.copy(
+                        addingToCartProductId = null,
+                        addToCartMessage = "Added to cart"
+                    )
+                }
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        addingToCartProductId = null,
+                        addToCartMessage = result.message
+                    )
+                }
+            }
+        }
+    }
+
+    fun clearAddToCartMessage() {
+        _uiState.value = _uiState.value.copy(addToCartMessage = null)
+    }
 
     private fun loadRecommendations() {
         viewModelScope.launch {
