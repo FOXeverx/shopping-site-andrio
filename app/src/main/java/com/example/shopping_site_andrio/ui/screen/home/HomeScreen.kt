@@ -22,6 +22,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val products = viewModel.getProductFlow().collectAsLazyPagingItems()
+    var searchActive by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -42,9 +43,17 @@ fun HomeScreen(
             SearchBar(
                 query = uiState.searchQuery,
                 onQueryChange = viewModel::updateSearch,
-                onSearch = {},
-                active = false,
-                onActiveChange = {},
+                onSearch = {
+                    searchActive = false
+                    products.refresh()
+                },
+                active = searchActive,
+                onActiveChange = { active ->
+                    searchActive = active
+                    if (!active && uiState.searchQuery.isBlank()) {
+                        products.refresh()
+                    }
+                },
                 leadingIcon = { },
                 placeholder = { Text("Search products...") },
                 modifier = Modifier

@@ -3,6 +3,10 @@ package com.example.shopping_site_andrio.ui.screen.cart
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.example.shopping_site_andrio.data.config.AppConfig
 import com.example.shopping_site_andrio.data.model.CartItemDto
 import com.example.shopping_site_andrio.ui.component.EmptyState
 import com.example.shopping_site_andrio.ui.component.ErrorView
@@ -152,6 +157,12 @@ fun CartItemRow(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            AsyncImage(
+                model = AppConfig.resolveImageUrl(item.product?.image_url) ?: "https://via.placeholder.com/80",
+                contentDescription = item.product?.name ?: "Product",
+                modifier = Modifier.size(72.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.product?.name ?: "Product",
@@ -168,17 +179,21 @@ fun CartItemRow(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 IconButton(onClick = { onQuantityChange(item.quantity - 1) }) {
-                    Text("-")
+                    Icon(Icons.Filled.Remove, contentDescription = "Decrease quantity")
                 }
                 Text(
                     text = item.quantity.toString(),
                     style = MaterialTheme.typography.titleMedium
                 )
                 IconButton(onClick = { onQuantityChange(item.quantity + 1) }) {
-                    Text("+")
+                    Icon(Icons.Filled.Add, contentDescription = "Increase quantity")
                 }
                 IconButton(onClick = onRemove) {
-                    Text("X", color = MaterialTheme.colorScheme.error)
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = "Remove item",
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }

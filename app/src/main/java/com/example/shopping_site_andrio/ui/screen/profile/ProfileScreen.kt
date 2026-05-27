@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.shopping_site_andrio.ui.component.ErrorView
@@ -20,6 +21,7 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.message) {
         uiState.message?.let {
@@ -96,21 +98,33 @@ fun ProfileScreen(
 
                     if (uiState.showChangePassword) {
                         item {
+                            var oldPasswordVisible by remember { mutableStateOf(false) }
                             OutlinedTextField(
                                 value = uiState.oldPassword,
                                 onValueChange = viewModel::updateOldPassword,
                                 label = { Text("Old Password") },
-                                visualTransformation = PasswordVisualTransformation(),
+                                visualTransformation = if (oldPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    TextButton(onClick = { oldPasswordVisible = !oldPasswordVisible }) {
+                                        Text(if (oldPasswordVisible) "Hide" else "Show")
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true
                             )
                         }
                         item {
+                            var newPasswordVisible by remember { mutableStateOf(false) }
                             OutlinedTextField(
                                 value = uiState.newPassword,
                                 onValueChange = viewModel::updateNewPassword,
                                 label = { Text("New Password") },
-                                visualTransformation = PasswordVisualTransformation(),
+                                visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    TextButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
+                                        Text(if (newPasswordVisible) "Hide" else "Show")
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true
                             )
@@ -145,10 +159,7 @@ fun ProfileScreen(
                     item {
                         HorizontalDivider()
                         Button(
-                            onClick = {
-                                viewModel.logout()
-                                onLogout()
-                            },
+                            onClick = { showLogoutDialog = true },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.error
@@ -160,5 +171,27 @@ fun ProfileScreen(
                 }
             }
         }
+    }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Logout") },
+            text = { Text("Are you sure you want to logout?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    viewModel.logout()
+                    onLogout()
+                }) {
+                    Text("Logout", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

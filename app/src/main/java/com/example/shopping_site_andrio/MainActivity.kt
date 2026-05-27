@@ -6,6 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -55,7 +60,7 @@ fun MainApp() {
             if (showBottomBar) {
                 NavigationBar {
                     NavigationBarItem(
-                        icon = { Text("H") },
+                        icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
                         label = { Text("Home") },
                         selected = currentRoute == Screen.Home.route,
                         onClick = {
@@ -67,7 +72,7 @@ fun MainApp() {
                         }
                     )
                     NavigationBarItem(
-                        icon = { Text("C") },
+                        icon = { Icon(Icons.Filled.ShoppingCart, contentDescription = "Cart") },
                         label = { Text("Cart") },
                         selected = currentRoute == Screen.Cart.route,
                         onClick = {
@@ -79,7 +84,7 @@ fun MainApp() {
                         }
                     )
                     NavigationBarItem(
-                        icon = { Text("O") },
+                        icon = { Icon(Icons.Filled.Receipt, contentDescription = "Orders") },
                         label = { Text("Orders") },
                         selected = currentRoute == Screen.OrderList.route,
                         onClick = {
@@ -91,7 +96,7 @@ fun MainApp() {
                         }
                     )
                     NavigationBarItem(
-                        icon = { Text("P") },
+                        icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
                         label = { Text("Profile") },
                         selected = currentRoute == Screen.Profile.route,
                         onClick = {

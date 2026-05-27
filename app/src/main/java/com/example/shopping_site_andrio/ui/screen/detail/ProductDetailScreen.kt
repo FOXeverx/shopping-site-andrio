@@ -4,6 +4,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,7 +55,9 @@ fun ProductDetailScreen(
             TopAppBar(
                 title = { Text("Product Details") },
                 navigationIcon = {
-                    TextButton(onClick = onBack) { Text("Back") }
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
                 }
             )
         }
@@ -121,14 +127,18 @@ fun ProductDetailScreen(
                         ) {
                             OutlinedButton(onClick = {
                                 viewModel.updateQuantity(uiState.quantity - 1)
-                            }) { Text("-") }
+                            }) {
+                                Icon(Icons.Filled.Remove, contentDescription = "Decrease quantity")
+                            }
                             Text(
                                 text = uiState.quantity.toString(),
                                 style = MaterialTheme.typography.titleMedium
                             )
                             OutlinedButton(onClick = {
                                 viewModel.updateQuantity(uiState.quantity + 1)
-                            }) { Text("+") }
+                            }) {
+                                Icon(Icons.Filled.Add, contentDescription = "Increase quantity")
+                            }
                             Spacer(modifier = Modifier.weight(1f))
                             Button(
                                 onClick = { viewModel.addToCart(productId) },
