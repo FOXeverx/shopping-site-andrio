@@ -108,7 +108,7 @@ app/src/main/java/com/example/shopping_site_andrio/
 
 ## 后端 API
 
-后端服务需运行在 `http://10.0.2.2:8000/api/`（模拟器访问宿主机）。所有接口遵循统一响应格式：
+后端服务需在 `app/build.gradle.kts` 的 `buildConfigField` 定义。所有接口遵循统一响应格式：
 
 ```json
 {
