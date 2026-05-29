@@ -10,12 +10,15 @@ import com.example.shopping_site_andrio.data.model.RecommendItemDto
 import com.example.shopping_site_andrio.data.repository.CartRepository
 import com.example.shopping_site_andrio.data.repository.ProductRepository
 import com.example.shopping_site_andrio.data.repository.RecommendRepository
+import com.example.shopping_site_andrio.domain.model.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,11 +31,8 @@ data class HomeUiState(
     val showFilters: Boolean = false,
     val recommendations: List<RecommendItemDto> = emptyList(),
     val recommendationsLoading: Boolean = false,
-    val addingToCartProductId: Int? = null,
-    val snackbarEvent: SnackbarEvent? = null
+    val addingToCartProductId: Int? = null
 )
-
-data class SnackbarEvent(val id: Long, val message: String)
 
 data class FilterParams(
     val search: String?,
@@ -53,11 +53,12 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private val _events = Channel<UiEvent>(Channel.BUFFERED)
+    val events: Flow<UiEvent> = _events.receiveAsFlow()
+
     private val _filterParams = MutableStateFlow(
         FilterParams(null, null, null, "created_at", "desc")
     )
-
-    private var snackbarCounter = 0L
 
     val productFlow: Flow<PagingData<ProductDto>> = _filterParams.flatMapLatest { params ->
         productRepository.getProducts(
@@ -117,25 +118,17 @@ class HomeViewModel @Inject constructor(
     fun addToCart(productId: Int) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(addingToCartProductId = productId)
-            val message: String
             when (val result = cartRepository.addToCart(productId, 1)) {
                 is ApiResult.Success -> {
-                    message = "Added to cart"
+                    _uiState.value = _uiState.value.copy(addingToCartProductId = null)
+                    _events.send(UiEvent.ShowSnackbar("Added to cart"))
                 }
                 is ApiResult.Error -> {
-                    message = result.message
+                    _uiState.value = _uiState.value.copy(addingToCartProductId = null)
+                    _events.send(UiEvent.ShowSnackbar(result.message))
                 }
             }
-            snackbarCounter++
-            _uiState.value = _uiState.value.copy(
-                addingToCartProductId = null,
-                snackbarEvent = SnackbarEvent(snackbarCounter, message)
-            )
         }
-    }
-
-    fun clearSnackbarMessage() {
-        _uiState.value = _uiState.value.copy(snackbarEvent = null)
     }
 
     private fun loadRecommendations() {

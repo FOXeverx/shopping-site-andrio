@@ -22,7 +22,8 @@ data class ProfileUiState(
     val newPassword: String = "",
     val verificationCode: String = "",
     val message: String? = null,
-    val showChangePassword: Boolean = false
+    val showChangePassword: Boolean = false,
+    val darkMode: String = "system"
 )
 
 @HiltViewModel
@@ -36,6 +37,11 @@ class ProfileViewModel @Inject constructor(
 
     init {
         loadUser()
+        viewModelScope.launch {
+            tokenManager.darkMode.collect { mode ->
+                _uiState.value = _uiState.value.copy(darkMode = mode)
+            }
+        }
     }
 
     fun loadUser() {
@@ -125,5 +131,12 @@ class ProfileViewModel @Inject constructor(
 
     fun clearMessage() {
         _uiState.value = _uiState.value.copy(message = null)
+    }
+
+    fun setDarkMode(mode: String) {
+        viewModelScope.launch {
+            tokenManager.setDarkMode(mode)
+            _uiState.value = _uiState.value.copy(darkMode = mode)
+        }
     }
 }

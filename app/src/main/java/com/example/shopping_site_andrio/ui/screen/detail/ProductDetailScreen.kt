@@ -1,17 +1,21 @@
 package com.example.shopping_site_andrio.ui.screen.detail
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -22,7 +26,7 @@ import com.example.shopping_site_andrio.ui.component.ErrorView
 import com.example.shopping_site_andrio.ui.component.formatPrice
 import com.example.shopping_site_andrio.ui.component.SkeletonLoading
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ProductDetailScreen(
     productId: Int,
@@ -32,6 +36,7 @@ fun ProductDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val haptic = LocalHapticFeedback.current
 
     LaunchedEffect(productId) {
         viewModel.loadProduct(productId)
@@ -115,7 +120,8 @@ fun ProductDetailScreen(
                         product.description?.let { desc ->
                             Text(
                                 text = desc,
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.animateContentSize()
                             )
                         }
                     }
@@ -142,7 +148,10 @@ fun ProductDetailScreen(
                             }
                             Spacer(modifier = Modifier.weight(1f))
                             Button(
-                                onClick = { viewModel.addToCart(productId) },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    viewModel.addToCart(productId)
+                                },
                                 enabled = !uiState.addingToCart && product.stock > 0
                             ) {
                                 if (uiState.addingToCart) {
@@ -212,7 +221,7 @@ fun ProductDetailScreen(
                         }
                     } else {
                         items(uiState.comments, key = { it.id }) { comment ->
-                            CommentItem(comment = comment)
+                            CommentItem(comment = comment, modifier = Modifier.animateItemPlacement())
                         }
                         if (uiState.commentsHasMore || uiState.commentsLoading) {
                             item {
@@ -300,8 +309,8 @@ fun RecommendationRow(
 }
 
 @Composable
-fun CommentItem(comment: CommentDto) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+fun CommentItem(comment: CommentDto, modifier: Modifier = Modifier) {
+    Column(modifier = modifier.padding(vertical = 4.dp)) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically

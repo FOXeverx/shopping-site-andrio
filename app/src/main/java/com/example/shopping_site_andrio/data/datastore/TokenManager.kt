@@ -27,6 +27,7 @@ class TokenManager @Inject constructor(
         private val KEY_USERNAME = stringPreferencesKey("username")
         private val KEY_USER_ROLE = stringPreferencesKey("user_role")
         private val KEY_IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        private val KEY_DARK_MODE = stringPreferencesKey("dark_mode")
     }
 
     val token: Flow<String?> = context.dataStore.data.map { it[KEY_TOKEN] }
@@ -34,6 +35,7 @@ class TokenManager @Inject constructor(
     val username: Flow<String?> = context.dataStore.data.map { it[KEY_USERNAME] }
     val userRole: Flow<String?> = context.dataStore.data.map { it[KEY_USER_ROLE] }
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { it[KEY_IS_LOGGED_IN] ?: false }
+    val darkMode: Flow<String> = context.dataStore.data.map { it[KEY_DARK_MODE] ?: "system" }
 
     suspend fun saveAuthData(token: String, userId: Int, username: String, role: String) {
         context.dataStore.edit { prefs ->
@@ -52,6 +54,12 @@ class TokenManager @Inject constructor(
             prefs.remove(KEY_USERNAME)
             prefs.remove(KEY_USER_ROLE)
             prefs[KEY_IS_LOGGED_IN] = false
+        }
+    }
+
+    suspend fun setDarkMode(mode: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_DARK_MODE] = mode
         }
     }
 }

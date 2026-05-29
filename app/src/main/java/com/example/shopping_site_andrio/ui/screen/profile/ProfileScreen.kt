@@ -101,42 +101,42 @@ fun ProfileScreen(
 
                     if (uiState.showChangePassword) {
                         item {
-                            var oldPasswordVisible by remember { mutableStateOf(false) }
-                            OutlinedTextField(
-                                value = uiState.oldPassword,
-                                onValueChange = viewModel::updateOldPassword,
-                                label = { Text("Old Password") },
-                                visualTransformation = if (oldPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                trailingIcon = {
-                                    IconButton(onClick = { oldPasswordVisible = !oldPasswordVisible }) {
-                                        Icon(
-                                            imageVector = if (oldPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                                            contentDescription = if (oldPasswordVisible) "Hide password" else "Show password"
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true
-                            )
-                        }
-                        item {
-                            var newPasswordVisible by remember { mutableStateOf(false) }
-                            OutlinedTextField(
-                                value = uiState.newPassword,
-                                onValueChange = viewModel::updateNewPassword,
-                                label = { Text("New Password") },
-                                visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                trailingIcon = {
-                                    IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
-                                        Icon(
-                                            imageVector = if (newPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                                            contentDescription = if (newPasswordVisible) "Hide password" else "Show password"
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true
-                            )
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                var oldPasswordVisible by remember { mutableStateOf(false) }
+                                OutlinedTextField(
+                                    value = uiState.oldPassword,
+                                    onValueChange = viewModel::updateOldPassword,
+                                    label = { Text("Old Password") },
+                                    visualTransformation = if (oldPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                    trailingIcon = {
+                                        IconButton(onClick = { oldPasswordVisible = !oldPasswordVisible }) {
+                                            Icon(
+                                                imageVector = if (oldPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                                contentDescription = if (oldPasswordVisible) "Hide password" else "Show password"
+                                            )
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true
+                                )
+                                var newPasswordVisible by remember { mutableStateOf(false) }
+                                OutlinedTextField(
+                                    value = uiState.newPassword,
+                                    onValueChange = viewModel::updateNewPassword,
+                                    label = { Text("New Password") },
+                                    visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                    trailingIcon = {
+                                        IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
+                                            Icon(
+                                                imageVector = if (newPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                                contentDescription = if (newPasswordVisible) "Hide password" else "Show password"
+                                            )
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true
+                                )
+                            }
                         }
                         item {
                             Row(
@@ -161,6 +161,36 @@ fun ProfileScreen(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text("Change Password")
+                            }
+                        }
+                    }
+
+                item {
+                        HorizontalDivider()
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Dark Mode", style = MaterialTheme.typography.titleSmall)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                FilterChip(
+                                    selected = uiState.darkMode == "system",
+                                    onClick = { viewModel.setDarkMode("system") },
+                                    label = { Text("System") }
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                FilterChip(
+                                    selected = uiState.darkMode == "light",
+                                    onClick = { viewModel.setDarkMode("light") },
+                                    label = { Text("Light") }
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                FilterChip(
+                                    selected = uiState.darkMode == "dark",
+                                    onClick = { viewModel.setDarkMode("dark") },
+                                    label = { Text("Dark") }
+                                )
                             }
                         }
                     }

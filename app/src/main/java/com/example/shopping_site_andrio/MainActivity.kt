@@ -43,8 +43,15 @@ fun MainApp() {
     val currentRoute = navBackStackEntry?.destination?.route
     val loginViewModel: LoginViewModel = hiltViewModel()
     val loginState by loginViewModel.uiState.collectAsState()
+    val darkMode by loginViewModel.darkMode.collectAsState(initial = "system")
 
     val startDestination = if (loginState.isLoggedIn) Screen.Home.route else Screen.Login.route
+
+    val effectiveDarkMode = when (darkMode) {
+        "dark" -> true
+        "light" -> false
+        else -> null
+    }
 
     val wasLoggedIn = remember { mutableStateOf(loginState.isLoggedIn) }
     LaunchedEffect(loginState.isLoggedIn) {
@@ -64,68 +71,70 @@ fun MainApp() {
     )
     val showBottomBar = currentRoute in bottomNavRoutes
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            if (showBottomBar) {
-                NavigationBar {
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-                        label = { Text("Home") },
-                        selected = currentRoute == Screen.Home.route,
-                        onClick = {
-                            if (currentRoute != Screen.Home.route) {
-                                navController.navigate(Screen.Home.route) {
-                                    popUpTo(Screen.Home.route) { inclusive = true }
+    Shopping_Site_AndrioTheme(darkModeOverride = effectiveDarkMode) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            bottomBar = {
+                if (showBottomBar) {
+                    NavigationBar {
+                        NavigationBarItem(
+                            icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
+                            label = { Text("Home") },
+                            selected = currentRoute == Screen.Home.route,
+                            onClick = {
+                                if (currentRoute != Screen.Home.route) {
+                                    navController.navigate(Screen.Home.route) {
+                                        popUpTo(Screen.Home.route) { inclusive = true }
+                                    }
                                 }
                             }
-                        }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Filled.ShoppingCart, contentDescription = "Cart") },
-                        label = { Text("Cart") },
-                        selected = currentRoute == Screen.Cart.route,
-                        onClick = {
-                            if (currentRoute != Screen.Cart.route) {
-                                navController.navigate(Screen.Cart.route) {
-                                    popUpTo(Screen.Home.route)
+                        )
+                        NavigationBarItem(
+                            icon = { Icon(Icons.Filled.ShoppingCart, contentDescription = "Cart") },
+                            label = { Text("Cart") },
+                            selected = currentRoute == Screen.Cart.route,
+                            onClick = {
+                                if (currentRoute != Screen.Cart.route) {
+                                    navController.navigate(Screen.Cart.route) {
+                                        popUpTo(Screen.Home.route)
+                                    }
                                 }
                             }
-                        }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Filled.Receipt, contentDescription = "Orders") },
-                        label = { Text("Orders") },
-                        selected = currentRoute == Screen.OrderList.route,
-                        onClick = {
-                            if (currentRoute != Screen.OrderList.route) {
-                                navController.navigate(Screen.OrderList.route) {
-                                    popUpTo(Screen.Home.route)
+                        )
+                        NavigationBarItem(
+                            icon = { Icon(Icons.Filled.Receipt, contentDescription = "Orders") },
+                            label = { Text("Orders") },
+                            selected = currentRoute == Screen.OrderList.route,
+                            onClick = {
+                                if (currentRoute != Screen.OrderList.route) {
+                                    navController.navigate(Screen.OrderList.route) {
+                                        popUpTo(Screen.Home.route)
+                                    }
                                 }
                             }
-                        }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
-                        label = { Text("Profile") },
-                        selected = currentRoute == Screen.Profile.route,
-                        onClick = {
-                            if (currentRoute != Screen.Profile.route) {
-                                navController.navigate(Screen.Profile.route) {
-                                    popUpTo(Screen.Home.route)
+                        )
+                        NavigationBarItem(
+                            icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
+                            label = { Text("Profile") },
+                            selected = currentRoute == Screen.Profile.route,
+                            onClick = {
+                                if (currentRoute != Screen.Profile.route) {
+                                    navController.navigate(Screen.Profile.route) {
+                                        popUpTo(Screen.Home.route)
+                                    }
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
+        ) { innerPadding ->
+            AppNavigation(
+                navController = navController,
+                isLoggedIn = loginState.isLoggedIn,
+                startDestination = startDestination,
+                modifier = Modifier.padding(innerPadding)
+            )
         }
-    ) { innerPadding ->
-        AppNavigation(
-            navController = navController,
-            isLoggedIn = loginState.isLoggedIn,
-            startDestination = startDestination,
-            modifier = Modifier.padding(innerPadding)
-        )
     }
 }

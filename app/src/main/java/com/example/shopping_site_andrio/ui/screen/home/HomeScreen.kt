@@ -1,12 +1,18 @@
 package com.example.shopping_site_andrio.ui.screen.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,7 +22,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.shopping_site_andrio.ui.component.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onProductClick: (Int) -> Unit,
@@ -27,10 +33,13 @@ fun HomeScreen(
     var searchActive by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(uiState.snackbarEvent?.id) {
-        uiState.snackbarEvent?.let {
-            snackbarHostState.showSnackbar(it.message)
-            viewModel.clearSnackbarMessage()
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is com.example.shopping_site_andrio.domain.model.UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+            }
         }
     }
 
@@ -115,7 +124,11 @@ fun HomeScreen(
                 )
             }
 
-            if (uiState.showFilters) {
+            AnimatedVisibility(
+                visible = uiState.showFilters,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -204,7 +217,8 @@ fun HomeScreen(
                                     product = product,
                                     onClick = { onProductClick(product.id) },
                                     onAddToCart = { viewModel.addToCart(product.id) },
-                                    isAddingToCart = uiState.addingToCartProductId == product.id
+                                    isAddingToCart = uiState.addingToCartProductId == product.id,
+                                    modifier = Modifier.animateItemPlacement()
                                 )
                             }
                         }

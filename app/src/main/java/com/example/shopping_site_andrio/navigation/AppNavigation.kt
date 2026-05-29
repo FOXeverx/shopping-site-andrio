@@ -4,13 +4,16 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavDeepLink
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.example.shopping_site_andrio.ui.screen.cart.CartScreen
 import com.example.shopping_site_andrio.ui.screen.detail.ProductDetailScreen
 import com.example.shopping_site_andrio.ui.screen.home.HomeScreen
@@ -26,6 +29,9 @@ fun AppNavigation(
     startDestination: String,
     modifier: Modifier = Modifier
 ) {
+    val enterAnim = fadeIn(animationSpec = tween(300)) + slideInHorizontally(animationSpec = tween(300)) { it / 4 }
+    val exitAnim = fadeOut(animationSpec = tween(300)) + slideOutHorizontally(animationSpec = tween(300)) { -it / 4 }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -42,8 +48,8 @@ fun AppNavigation(
         }
         composable(
             route = Screen.Home.route,
-            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
-            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+            enterTransition = { enterAnim },
+            exitTransition = { exitAnim }
         ) {
             HomeScreen(
                 onProductClick = { productId ->
@@ -53,9 +59,12 @@ fun AppNavigation(
         }
         composable(
             route = Screen.ProductDetail.route,
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "https://shop.example.com/product/{id}" }
+            ),
             arguments = listOf(navArgument("id") { type = NavType.IntType }),
-            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
-            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+            enterTransition = { enterAnim },
+            exitTransition = { exitAnim }
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getInt("id") ?: return@composable
             ProductDetailScreen(
@@ -68,15 +77,15 @@ fun AppNavigation(
         }
         composable(
             route = Screen.Cart.route,
-            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
-            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+            enterTransition = { enterAnim },
+            exitTransition = { exitAnim }
         ) {
             CartScreen()
         }
         composable(
             route = Screen.Profile.route,
-            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
-            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+            enterTransition = { enterAnim },
+            exitTransition = { exitAnim }
         ) {
             ProfileScreen(
                 onLogout = {
@@ -88,8 +97,8 @@ fun AppNavigation(
         }
         composable(
             route = Screen.OrderList.route,
-            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
-            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+            enterTransition = { enterAnim },
+            exitTransition = { exitAnim }
         ) {
             OrderListScreen(
                 onOrderClick = { orderId ->
@@ -100,8 +109,8 @@ fun AppNavigation(
         composable(
             route = Screen.OrderDetail.route,
             arguments = listOf(navArgument("id") { type = NavType.IntType }),
-            enterTransition = { fadeIn() + slideInHorizontally { it / 4 } },
-            exitTransition = { fadeOut() + slideOutHorizontally { -it / 4 } }
+            enterTransition = { enterAnim },
+            exitTransition = { exitAnim }
         ) { backStackEntry ->
             val orderId = backStackEntry.arguments?.getInt("id") ?: return@composable
             OrderDetailScreen(

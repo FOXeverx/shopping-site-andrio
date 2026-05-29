@@ -1,5 +1,6 @@
 package com.example.shopping_site_andrio.ui.screen.cart
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,18 +13,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.shopping_site_andrio.data.config.AppConfig
 import com.example.shopping_site_andrio.data.model.CartItemDto
-import com.example.shopping_site_andrio.domain.model.UiState
 import com.example.shopping_site_andrio.ui.component.EmptyState
 import com.example.shopping_site_andrio.ui.component.ErrorView
 import com.example.shopping_site_andrio.ui.component.formatPrice
 import com.example.shopping_site_andrio.ui.component.SkeletonLoading
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CartScreen(
     viewModel: CartViewModel = hiltViewModel()
@@ -107,7 +109,8 @@ fun CartScreen(
                                 onQuantityChange = { qty ->
                                     viewModel.updateQuantity(item.id, qty)
                                 },
-                                onRemove = { deleteConfirmId = item.id }
+                                onRemove = { deleteConfirmId = item.id },
+                                modifier = Modifier.animateItemPlacement()
                             )
                         }
                     }
@@ -211,9 +214,11 @@ fun CartScreen(
 fun CartItemRow(
     item: CartItemDto,
     onQuantityChange: (Int) -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    val haptic = LocalHapticFeedback.current
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -251,7 +256,10 @@ fun CartItemRow(
                 IconButton(onClick = { onQuantityChange(item.quantity + 1) }) {
                     Icon(Icons.Filled.Add, contentDescription = "Increase quantity")
                 }
-                IconButton(onClick = onRemove) {
+                IconButton(onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onRemove()
+                }) {
                     Icon(
                         Icons.Filled.Close,
                         contentDescription = "Remove item",

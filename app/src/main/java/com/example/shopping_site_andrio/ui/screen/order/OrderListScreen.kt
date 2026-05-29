@@ -1,5 +1,6 @@
 package com.example.shopping_site_andrio.ui.screen.order
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +18,7 @@ import com.example.shopping_site_andrio.ui.component.ErrorView
 import com.example.shopping_site_andrio.ui.component.formatPrice
 import com.example.shopping_site_andrio.ui.component.SkeletonLoading
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun OrderListScreen(
     onOrderClick: (Int) -> Unit,
@@ -63,7 +64,7 @@ fun OrderListScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(uiState.orders.data ?: emptyList(), key = { it.id }) { order ->
-                        OrderCard(order = order, onClick = { onOrderClick(order.id) })
+                        OrderCard(order = order, onClick = { onOrderClick(order.id) }, modifier = Modifier.animateItemPlacement())
                     }
                 }
             }
@@ -72,10 +73,10 @@ fun OrderListScreen(
 }
 
 @Composable
-fun OrderCard(order: OrderDto, onClick: () -> Unit) {
+fun OrderCard(order: OrderDto, onClick: () -> Unit, modifier: Modifier = Modifier) {
     ElevatedCard(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(

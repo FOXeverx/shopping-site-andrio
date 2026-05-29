@@ -33,6 +33,7 @@ class LoginViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+    val darkMode = tokenManager.darkMode
 
     init {
         viewModelScope.launch {
