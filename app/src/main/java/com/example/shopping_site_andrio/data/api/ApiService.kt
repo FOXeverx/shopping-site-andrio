@@ -240,15 +240,15 @@ interface ApiService {
     @DELETE("admin/security/ip-blocks/{block_id}")
     suspend fun unblockIp(@Path("block_id") blockId: Int): Response<ApiResponse<Nothing>>
 
-    @POST("admin/product")
+    @POST("product")
     suspend fun createProduct(@Body request: CreateProductRequest): Response<ApiResponse<ProductDto>>
 
-    @PUT("admin/product/{product_id}")
+    @PUT("product/{product_id}")
     suspend fun updateProduct(
         @Path("product_id") productId: Int,
         @Body request: UpdateProductRequest
     ): Response<ApiResponse<ProductDto>>
 
-    @DELETE("admin/product/{product_id}")
+    @DELETE("product/{product_id}")
     suspend fun deleteProduct(@Path("product_id") productId: Int): Response<ApiResponse<Nothing>>
 }
