@@ -3,6 +3,7 @@ package com.example.shopping_site_andrio.ui.screen.profile
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -20,6 +21,7 @@ import com.example.shopping_site_andrio.ui.component.SkeletonLoading
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
+    onAdminClick: (() -> Unit)? = null,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -165,7 +167,26 @@ fun ProfileScreen(
                         }
                     }
 
-                item {
+                    if (onAdminClick != null && (user.role == "admin" || user.role == "sales")) {
+                        item {
+                            ElevatedCard(
+                                onClick = onAdminClick,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                            ) {
+                                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Filled.AdminPanelSettings, contentDescription = null, modifier = Modifier.size(32.dp))
+                                    Spacer(Modifier.width(12.dp))
+                                    Column {
+                                        Text("Admin Panel", style = MaterialTheme.typography.titleSmall)
+                                        Text("User management, logs, security", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    item {
                         HorizontalDivider()
                         Row(
                             modifier = Modifier.fillMaxWidth(),

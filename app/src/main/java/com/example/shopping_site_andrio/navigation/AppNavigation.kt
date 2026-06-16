@@ -21,6 +21,7 @@ import com.example.shopping_site_andrio.ui.screen.login.LoginScreen
 import com.example.shopping_site_andrio.ui.screen.order.OrderDetailScreen
 import com.example.shopping_site_andrio.ui.screen.order.OrderListScreen
 import com.example.shopping_site_andrio.ui.screen.profile.ProfileScreen
+import com.example.shopping_site_andrio.ui.screen.admin.*
 
 @Composable
 fun AppNavigation(
@@ -92,7 +93,10 @@ fun AppNavigation(
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                onAdminClick = if (isLoggedIn) {
+                    { navController.navigate(Screen.AdminDashboard.route) }
+                } else null
             )
         }
         composable(
@@ -117,6 +121,38 @@ fun AppNavigation(
                 orderId = orderId,
                 onBack = { navController.popBackStack() }
             )
+        }
+
+        composable(Screen.AdminDashboard.route) {
+            AdminDashboardScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToUsers = { navController.navigate(Screen.AdminUsers.route) },
+                onNavigateToLogs = { navController.navigate(Screen.AdminLogs.route) },
+                onNavigateToAnomalies = { navController.navigate(Screen.AdminAnomalies.route) },
+                onNavigateToSecurity = { navController.navigate(Screen.AdminSecurity.route) }
+            )
+        }
+        composable(Screen.AdminUsers.route) {
+            AdminUsersScreen(
+                onBack = { navController.popBackStack() },
+                onUserClick = { userId -> navController.navigate(Screen.AdminUserDetail.createRoute(userId)) }
+            )
+        }
+        composable(
+            route = Screen.AdminUserDetail.route,
+            arguments = listOf(navArgument("id") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getInt("id") ?: return@composable
+            AdminUserDetailScreen(userId = userId, onBack = { navController.popBackStack() })
+        }
+        composable(Screen.AdminLogs.route) {
+            AdminLogsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.AdminAnomalies.route) {
+            AdminAnomaliesScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.AdminSecurity.route) {
+            AdminSecurityScreen(onBack = { navController.popBackStack() })
         }
     }
 }

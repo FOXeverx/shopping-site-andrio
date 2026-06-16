@@ -114,4 +114,129 @@ interface ApiService {
 
     @POST("browse")
     suspend fun logBrowse(@Body request: BrowseLogRequest): Response<ApiResponse<Nothing>>
+
+    @Multipart
+    @POST("upload/image")
+    suspend fun uploadImage(@Part file: okhttp3.MultipartBody.Part): Response<ApiResponse<ImageUploadResult>>
+
+    @DELETE("product/comments/{comment_id}")
+    suspend fun deleteComment(@Path("comment_id") commentId: Int): Response<ApiResponse<Nothing>>
+
+    @GET("admin/users")
+    suspend fun getAdminUsers(
+        @Query("role") role: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<AdminUserListItem>>>
+
+    @GET("admin/users/simple")
+    suspend fun getAdminUsersSimple(
+        @Query("search") search: String? = null,
+        @Query("include_inactive") includeInactive: Boolean? = null,
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<AdminUserListItem>>>
+
+    @POST("admin/user")
+    suspend fun createAdminUser(@Body request: CreateAdminUserRequest): Response<ApiResponse<UserDto>>
+
+    @PUT("admin/user/{user_id}")
+    suspend fun updateAdminUser(
+        @Path("user_id") userId: Int,
+        @Body request: UpdateAdminUserRequest
+    ): Response<ApiResponse<UserDto>>
+
+    @DELETE("admin/user/{user_id}")
+    suspend fun deleteAdminUser(@Path("user_id") userId: Int): Response<ApiResponse<Nothing>>
+
+    @GET("admin/user/{user_id}/browse")
+    suspend fun getAdminUserBrowse(
+        @Path("user_id") userId: Int,
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<BrowseLogEntry>>>
+
+    @GET("admin/user/{user_id}/logins")
+    suspend fun getAdminUserLogins(
+        @Path("user_id") userId: Int,
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<LoginLogEntry>>>
+
+    @GET("admin/user/{user_id}/purchases/summary")
+    suspend fun getAdminUserPurchasesSummary(
+        @Path("user_id") userId: Int
+    ): Response<ApiResponse<List<PurchaseSummary>>>
+
+    @GET("admin/user/{user_id}/purchases/{category_id}")
+    suspend fun getAdminUserPurchasesDetail(
+        @Path("user_id") userId: Int,
+        @Path("category_id") categoryId: Int,
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<PurchaseDetail>>>
+
+    @GET("admin/logs")
+    suspend fun getOperationLogs(
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<OperationLogEntry>>>
+
+    @GET("admin/logs/browse")
+    suspend fun getAdminBrowseLogs(
+        @Query("product_id") productId: Int? = null,
+        @Query("user_id") userId: Int? = null,
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<BrowseLogEntry>>>
+
+    @GET("admin/anomalies")
+    suspend fun getAnomalies(
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<AnomalyEntry>>>
+
+    @POST("admin/anomaly/{id}/resolve")
+    suspend fun resolveAnomaly(@Path("id") id: Int): Response<ApiResponse<Nothing>>
+
+    @POST("admin/recommend/trigger")
+    suspend fun triggerRecommendation(): Response<ApiResponse<RecommendTriggerResult>>
+
+    @GET("admin/user-stats")
+    suspend fun getAdminUserStats(): Response<ApiResponse<UserStats>>
+
+    @GET("admin/anomaly-stats")
+    suspend fun getAdminAnomalyStats(): Response<ApiResponse<AnomalyStats>>
+
+    @GET("admin/sales-predict")
+    suspend fun getSalesPredict(
+        @Query("days") days: Int = 7
+    ): Response<ApiResponse<SalesPredict>>
+
+    @GET("admin/security/threats")
+    suspend fun getSecurityThreats(
+        @Query("threat_type") threatType: String? = null,
+        @Query("severity") severity: String? = null,
+        @Query("is_resolved") isResolved: Boolean? = null,
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<SecurityThreat>>>
+
+    @POST("admin/security/threats/{threat_id}/resolve")
+    suspend fun resolveSecurityThreat(@Path("threat_id") threatId: Int): Response<ApiResponse<Nothing>>
+
+    @GET("admin/security/threats/stats")
+    suspend fun getSecurityThreatStats(): Response<ApiResponse<ThreatStats>>
+
+    @GET("admin/security/ip-blocks")
+    suspend fun getIpBlocks(
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = AppConfig.DEFAULT_PAGE_SIZE
+    ): Response<ApiResponse<List<IpBlockEntry>>>
+
+    @POST("admin/security/ip-blocks")
+    suspend fun blockIp(@Body request: BlockIpRequest): Response<ApiResponse<Nothing>>
+
+    @DELETE("admin/security/ip-blocks/{block_id}")
+    suspend fun unblockIp(@Path("block_id") blockId: Int): Response<ApiResponse<Nothing>>
 }
