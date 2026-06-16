@@ -105,4 +105,16 @@ class AdminRepository @Inject constructor(
     suspend fun deleteComment(commentId: Int): ApiResult<Nothing> {
         return safeApiCall { apiService.deleteComment(commentId) }
     }
+
+    suspend fun createProduct(request: CreateProductRequest): ApiResult<ProductDto> {
+        return safeApiCall { apiService.createProduct(request) }
+    }
+
+    suspend fun updateProduct(productId: Int, request: UpdateProductRequest): ApiResult<ProductDto> {
+        return safeApiCall { apiService.updateProduct(productId, request) }
+    }
+
+    suspend fun deleteProduct(productId: Int): ApiResult<Nothing> {
+        return safeApiCall { apiService.deleteProduct(productId) }
+    }
 }

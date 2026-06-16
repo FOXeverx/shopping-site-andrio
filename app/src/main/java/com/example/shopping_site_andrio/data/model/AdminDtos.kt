@@ -148,3 +148,21 @@ data class ImageUploadResult(
     val url: String?,
     val filename: String?
 )
+
+data class CreateProductRequest(
+    val name: String,
+    val description: String?,
+    val price: Double,
+    val stock: Int,
+    val category_id: Int?,
+    val image_url: String?
+)
+
+data class UpdateProductRequest(
+    val name: String? = null,
+    val description: String? = null,
+    val price: Double? = null,
+    val stock: Int? = null,
+    val category_id: Int? = null,
+    val image_url: String? = null
+)

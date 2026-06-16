@@ -129,7 +129,8 @@ fun AppNavigation(
                 onNavigateToUsers = { navController.navigate(Screen.AdminUsers.route) },
                 onNavigateToLogs = { navController.navigate(Screen.AdminLogs.route) },
                 onNavigateToAnomalies = { navController.navigate(Screen.AdminAnomalies.route) },
-                onNavigateToSecurity = { navController.navigate(Screen.AdminSecurity.route) }
+                onNavigateToSecurity = { navController.navigate(Screen.AdminSecurity.route) },
+                onNavigateToProducts = { navController.navigate(Screen.AdminProducts.route) }
             )
         }
         composable(Screen.AdminUsers.route) {
@@ -153,6 +154,9 @@ fun AppNavigation(
         }
         composable(Screen.AdminSecurity.route) {
             AdminSecurityScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.AdminProducts.route) {
+            AdminProductsScreen(onBack = { navController.popBackStack() })
         }
     }
 }

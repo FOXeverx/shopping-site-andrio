@@ -19,6 +19,7 @@ fun AdminDashboardScreen(
     onNavigateToLogs: () -> Unit,
     onNavigateToAnomalies: () -> Unit,
     onNavigateToSecurity: () -> Unit,
+    onNavigateToProducts: () -> Unit,
     viewModel: AdminViewModel = hiltViewModel()
 ) {
     val state by viewModel.dashboardState.collectAsState()
@@ -54,6 +55,7 @@ fun AdminDashboardScreen(
             item { NavCard("Audit Logs", "Operation & browse logs") { onNavigateToLogs() } }
             item { NavCard("Anomalies", "Review & resolve anomalies") { onNavigateToAnomalies() } }
             item { NavCard("Security", "Threats & IP blocking") { onNavigateToSecurity() } }
+            item { NavCard("Product Management", "Create, edit, delete products") { onNavigateToProducts() } }
         }
     }
 }

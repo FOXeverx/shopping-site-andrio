@@ -2,14 +2,20 @@ package com.example.shopping_site_andrio.ui.screen.admin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.shopping_site_andrio.data.api.ApiResult
 import com.example.shopping_site_andrio.data.model.*
 import com.example.shopping_site_andrio.data.repository.AdminRepository
+import com.example.shopping_site_andrio.data.repository.ProductRepository
 import com.example.shopping_site_andrio.domain.model.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -73,9 +79,30 @@ data class AdminSecurityUiState(
     val blockExpiresMinutes: String = ""
 )
 
+data class AdminProductsUiState(
+    val products: Flow<PagingData<ProductDto>>? = null,
+    val message: String? = null,
+    val showCreateDialog: Boolean = false,
+    val showEditDialog: Boolean = false,
+    val editingProduct: ProductDto? = null,
+    val newName: String = "",
+    val newDescription: String = "",
+    val newPrice: String = "",
+    val newStock: String = "",
+    val newCategoryId: String = "",
+    val newImageUrl: String = "",
+    val editName: String = "",
+    val editDescription: String = "",
+    val editPrice: String = "",
+    val editStock: String = "",
+    val editCategoryId: String = "",
+    val editImageUrl: String = ""
+)
+
 @HiltViewModel
 class AdminViewModel @Inject constructor(
-    private val adminRepository: AdminRepository
+    private val adminRepository: AdminRepository,
+    private val productRepository: ProductRepository
 ) : ViewModel() {
 
     private val _dashboardState = MutableStateFlow(AdminDashboardUiState())
@@ -95,6 +122,9 @@ class AdminViewModel @Inject constructor(
 
     private val _securityState = MutableStateFlow(AdminSecurityUiState())
     val securityState: StateFlow<AdminSecurityUiState> = _securityState.asStateFlow()
+
+    private val _productsState = MutableStateFlow(AdminProductsUiState())
+    val productsState: StateFlow<AdminProductsUiState> = _productsState.asStateFlow()
 
     // ===== Dashboard =====
     fun loadDashboard() {
@@ -326,4 +356,65 @@ class AdminViewModel @Inject constructor(
     }
 
     fun clearSecurityMessage() { _securityState.value = _securityState.value.copy(message = null) }
+
+    // ===== Products =====
+    fun loadProducts() {
+        _productsState.value = _productsState.value.copy(
+            products = productRepository.getProducts().cachedIn(viewModelScope)
+        )
+    }
+
+    fun showCreateProductDialog() { _productsState.value = _productsState.value.copy(showCreateDialog = true) }
+    fun hideCreateProductDialog() { _productsState.value = _productsState.value.copy(showCreateDialog = false, newName = "", newDescription = "", newPrice = "", newStock = "", newCategoryId = "", newImageUrl = "") }
+    fun updateNewProductName(v: String) { _productsState.value = _productsState.value.copy(newName = v) }
+    fun updateNewProductDesc(v: String) { _productsState.value = _productsState.value.copy(newDescription = v) }
+    fun updateNewProductPrice(v: String) { _productsState.value = _productsState.value.copy(newPrice = v) }
+    fun updateNewProductStock(v: String) { _productsState.value = _productsState.value.copy(newStock = v) }
+    fun updateNewProductCategory(v: String) { _productsState.value = _productsState.value.copy(newCategoryId = v) }
+    fun updateNewProductImage(v: String) { _productsState.value = _productsState.value.copy(newImageUrl = v) }
+
+    fun createProduct() {
+        val s = _productsState.value
+        val req = CreateProductRequest(s.newName, s.newDescription.ifBlank { null }, s.newPrice.toDoubleOrNull() ?: 0.0, s.newStock.toIntOrNull() ?: 0, s.newCategoryId.toIntOrNull(), s.newImageUrl.ifBlank { null })
+        viewModelScope.launch {
+            when (val r = adminRepository.createProduct(req)) {
+                is ApiResult.Success -> { hideCreateProductDialog(); loadProducts(); _productsState.value = _productsState.value.copy(message = "Product created") }
+                is ApiResult.Error -> _productsState.value = _productsState.value.copy(message = r.message)
+            }
+        }
+    }
+
+    fun showEditProductDialog(product: ProductDto) {
+        _productsState.value = _productsState.value.copy(showEditDialog = true, editingProduct = product, editName = product.name, editDescription = product.description ?: "", editPrice = product.price.toString(), editStock = product.stock.toString(), editCategoryId = product.category_id?.toString() ?: "", editImageUrl = product.image_url ?: "")
+    }
+    fun hideEditProductDialog() { _productsState.value = _productsState.value.copy(showEditDialog = false, editingProduct = null) }
+    fun updateEditProductName(v: String) { _productsState.value = _productsState.value.copy(editName = v) }
+    fun updateEditProductDesc(v: String) { _productsState.value = _productsState.value.copy(editDescription = v) }
+    fun updateEditProductPrice(v: String) { _productsState.value = _productsState.value.copy(editPrice = v) }
+    fun updateEditProductStock(v: String) { _productsState.value = _productsState.value.copy(editStock = v) }
+    fun updateEditProductCategory(v: String) { _productsState.value = _productsState.value.copy(editCategoryId = v) }
+    fun updateEditProductImage(v: String) { _productsState.value = _productsState.value.copy(editImageUrl = v) }
+
+    fun updateProduct() {
+        val s = _productsState.value
+        val pid = s.editingProduct?.id ?: return
+        val req = UpdateProductRequest(name = s.editName.ifBlank { null }, description = s.editDescription.ifBlank { null }, price = s.editPrice.toDoubleOrNull(), stock = s.editStock.toIntOrNull(), category_id = s.editCategoryId.toIntOrNull(), image_url = s.editImageUrl.ifBlank { null })
+        viewModelScope.launch {
+            when (val r = adminRepository.updateProduct(pid, req)) {
+                is ApiResult.Success -> { hideEditProductDialog(); loadProducts(); _productsState.value = _productsState.value.copy(message = "Product updated") }
+                is ApiResult.Error -> _productsState.value = _productsState.value.copy(message = r.message)
+            }
+        }
+    }
+
+    fun deleteProduct(productId: Int) {
+        viewModelScope.launch {
+            when (val r = adminRepository.deleteProduct(productId)) {
+                is ApiResult.Success -> { loadProducts(); _productsState.value = _productsState.value.copy(message = "Product deleted") }
+                is ApiResult.Error -> _productsState.value = _productsState.value.copy(message = r.message)
+            }
+        }
+    }
+
+    fun clearProductsMessage() { _productsState.value = _productsState.value.copy(message = null) }
 }
